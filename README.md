@@ -1,5 +1,5 @@
 # psr
-Simple encrypted storage (password manager?)
+Simple AES-encrypted storage (password manager?)
 
 Usage:
 <pre>
