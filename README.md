@@ -10,4 +10,6 @@ Usage:
     p               - print all values
     s somestr       - search by given substring
     chkey           - change encryption key
+
+~$ ./psr test  # run tests
 </pre>
