@@ -10,12 +10,21 @@ main() {
 	if [[ $# -ge 1 ]]; then
 		handle_command "$@"
 	else
-		prompt_command
+		while true; do
+			prompt_command
+			echo ""
+		done
 	fi
 }
 
 print_help() {
 	echo "Help:"
+}
+
+prompt_command() {
+	local command
+	read -p "Type command: " command
+	handle_command $command
 }
 
 handle_command() {
@@ -26,8 +35,10 @@ handle_command() {
 	case $cmd in
 		p|print) print_all ;;
 		a|add) add_entry "${payload[@]}" ;;
-		d|delete) delete_entry_by_id "${payload[@]}" ;;
+		d|r|delete|remove) delete_entry_by_id "${payload[@]}" ;;
+		q|quit|exit) exit 0 ;;
 
+		h|help) print_help ;;
 		*) print_help ;;
 	esac
 }
@@ -64,14 +75,29 @@ add_entry() {
 		local id=0
 		write_storage "$password" "[${id}]${data}"
 	fi
+
+	[[ $? == 0 ]] && echo "Added entry with id $id"
 }
 
 delete_entry_by_id() {
 	local delete_id="$1"
+	if [[ ! $delete_id =~ ^[[:digit:]]+$ ]]; then
+		echo "Specify entry id" >&2
+		return 1
+	fi
 	password="$(request_password "$password")"
 
-	local entries="$(read_storage "$password" | grep -E -v "^\[${delete_id}\]")"
-	write_storage "$password" "$entries"
+	local entries="$(read_storage "$password")"
+	local delete_entry="$(echo "$entries" | grep -E "^\[${delete_id}\]")"
+	if [[ ! -z $delete_entry ]]; then
+		local entries="$(echo "$entries" | grep -E -v "^\[${delete_id}\]")"
+		write_storage "$password" "$entries"
+
+		[[ $? == 0 ]] && echo "Deleted entry: \"$delete_entry\""
+	else
+		echo "Not found"
+	fi
+	# FIX: fix deletion multiline entries
 }
 
 request_password() {
