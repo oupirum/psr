@@ -42,27 +42,33 @@ add_entry() {
 		return 0
 	fi
 
+	data="$(echo "$data" | sed -E "s/^/ /")"
+
 	entries="$(read_storage)"
 	if [[ ! -z $entries ]]; then
-		last_number=$(echo "$entries" | tail -n 1 | sed -E "s/^\[([[:digit:]]+)\][[:space:]].*$/\1/")
+		last_number=$(
+			echo "$entries" | \
+			grep -E "^\[[[:digit:]]+\]" | \
+			tail -n 1 | \
+			sed -E "s/^\[([[:digit:]]+)\].*$/\1/"
+		)
 		if [[ ! $last_number =~ ^[[:digit:]]+$ ]]; then
 			echo "Could not parse id of last entry" >&2
 			return 1
 		fi
 		id=$((last_number+1))
-		write_storage "${entries}"$'\n'"[${id}] ${data}"
+		write_storage "${entries}"$'\n'"[${id}]${data}"
 	else
 		id=0
-		write_storage "[${id}] ${data}"
+		write_storage "[${id}]${data}"
 	fi
 }
-# TODO: allow multiline entries
 
 delete_entry_by_id() {
 	delete_id="$1"
 
 	entries="$(read_storage)"
-	entries="$(echo "$entries" | grep -E -v "^\[${delete_id}\][[:space:]]")"
+	entries="$(echo "$entries" | grep -E -v "^\[${delete_id}\]")"
 	write_storage "$entries"
 }
 

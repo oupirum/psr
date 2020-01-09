@@ -55,10 +55,25 @@ test_delete_by_id() {
 	fi
 }
 
+test_multiline_entries() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh a zero zero
+	./psr.sh a one$'\n'one
+	./psr.sh a two
+
+	entries=$(./psr.sh p)
+	echo "$entries"
+	if [[ $entries != "[0] zero zero"$'\n'"[1] one"$'\n'" one"$'\n'"[2] two" ]]; then
+		exit 1
+	fi
+}
+
 # TODO: test saving same content multiple times
 
 test_add_one && \
 test_add_multiple && \
 test_add_with_tab && \
 test_delete_by_id && \
+test_multiline_entries && \
 echo "Success"
