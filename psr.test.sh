@@ -7,9 +7,9 @@ test_add_one() {
 
 	./psr.sh a qwe rty
 
-	decrypted="$(./psr.sh p)"
-	echo "$decrypted"
-	if [[ $decrypted != "0 qwe rty" ]]; then
+	entries="$(./psr.sh p)"
+	echo "$entries"
+	if [[ $entries != "[0] qwe rty" ]]; then
 		exit 1
 	fi
 }
@@ -20,9 +20,9 @@ test_add_multiple() {
 	./psr.sh a qwe rty
 	./psr.sh a sdasd
 
-	decrypted="$(./psr.sh p)"
-	echo "$decrypted"
-	if [[ $decrypted != "0 qwe rty\\n1 sdasd" ]]; then
+	entries="$(./psr.sh p)"
+	echo "$entries"
+	if [[ $entries != "[0] qwe rty"$'\n'"[1] sdasd" ]]; then
 		exit 1
 	fi
 }
@@ -33,14 +33,32 @@ test_add_with_tab() {
 	./psr.sh a qwe		rty
 	./psr.sh a "qwe		rty"
 
-	decrypted="$(./psr.sh p)"
-	echo "$decrypted"
-	if [[ $decrypted != "0 qwe rty\n1 qwe		rty" ]]; then
+	entries="$(./psr.sh p)"
+	echo "$entries"
+	if [[ $entries != "[0] qwe rty"$'\n'"[1] qwe		rty" ]]; then
 		exit 1
 	fi
 }
 
+test_delete_by_id() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh a zero zero
+	./psr.sh a one
+	./psr.sh a two
+	./psr.sh d 1
+
+	entries=$(./psr.sh p)
+	echo "$entries"
+	if [[ $entries != "[0] zero zero"$'\n'"[2] two" ]]; then
+		exit 1
+	fi
+}
+
+# TODO: test saving same content multiple times
+
 test_add_one && \
 test_add_multiple && \
 test_add_with_tab && \
+test_delete_by_id && \
 echo "Success"

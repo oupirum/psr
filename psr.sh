@@ -19,10 +19,6 @@ print_help() {
 }
 
 handle_command() {
-	# for word in "$@"; do
-	# 	echo $word
-	# done
-	# echo ""
 	args=("$@")
 	cmd="${args[0]}"
 	payload=("${args[@]:1}")
@@ -30,6 +26,7 @@ handle_command() {
 	case $cmd in
 		p|print) print_all ;;
 		a|add) add_entry "${payload[@]}" ;;
+		d|delete) delete_entry_by_id "${payload[@]}" ;;
 
 		*) print_help ;;
 	esac
@@ -45,13 +42,28 @@ add_entry() {
 		return 0
 	fi
 
-	stored_data="$(read_storage)"
-	if [[ ! -z $stored_data ]]; then
-		count="$(echo "$stored_data" | wc -l | sed -E "s/[[:space:]]+//")"
-		write_storage "${stored_data}\n${count} ${data}"
+	entries="$(read_storage)"
+	if [[ ! -z $entries ]]; then
+		last_number=$(echo "$entries" | tail -n 1 | sed -E "s/^\[([[:digit:]]+)\][[:space:]].*$/\1/")
+		if [[ ! $last_number =~ ^[[:digit:]]+$ ]]; then
+			echo "Could not parse id of last entry" >&2
+			return 1
+		fi
+		id=$((last_number+1))
+		write_storage "${entries}"$'\n'"[${id}] ${data}"
 	else
-		write_storage "0 $data"
+		id=0
+		write_storage "[${id}] ${data}"
 	fi
+}
+# TODO: allow multiline entries
+
+delete_entry_by_id() {
+	delete_id="$1"
+
+	entries="$(read_storage)"
+	entries="$(echo "$entries" | grep -E -v "^\[${delete_id}\][[:space:]]")"
+	write_storage "$entries"
 }
 
 write_storage() {
