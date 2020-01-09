@@ -19,9 +19,9 @@ print_help() {
 }
 
 handle_command() {
-	args=("$@")
-	cmd="${args[0]}"
-	payload=("${args[@]:1}")
+	local args=("$@")
+	local cmd="${args[0]}"
+	local payload=("${args[@]:1}")
 
 	case $cmd in
 		p|print) print_all ;;
@@ -33,20 +33,22 @@ handle_command() {
 }
 
 print_all() {
-	read_storage
+	password="$(request_password "$password")"
+	read_storage "$password"
 }
 
 add_entry() {
-	data="$*"
+	local data="$*"
 	if [[ -z $data ]]; then
 		return 0
 	fi
+	password="$(request_password "$password")"
 
 	data="$(echo "$data" | sed -E "s/^/ /")"
 
-	entries="$(read_storage)"
+	local entries="$(read_storage "$password")"
 	if [[ ! -z $entries ]]; then
-		last_number=$(
+		local last_number=$(
 			echo "$entries" | \
 			grep -E "^\[[[:digit:]]+\]" | \
 			tail -n 1 | \
@@ -56,31 +58,40 @@ add_entry() {
 			echo "Could not parse id of last entry" >&2
 			return 1
 		fi
-		id=$((last_number+1))
-		write_storage "${entries}"$'\n'"[${id}]${data}"
+		local id=$((last_number+1))
+		write_storage "$password" "${entries}"$'\n'"[${id}]${data}"
 	else
-		id=0
-		write_storage "[${id}]${data}"
+		local id=0
+		write_storage "$password" "[${id}]${data}"
 	fi
 }
 
 delete_entry_by_id() {
-	delete_id="$1"
+	local delete_id="$1"
+	password="$(request_password "$password")"
 
-	entries="$(read_storage)"
-	entries="$(echo "$entries" | grep -E -v "^\[${delete_id}\]")"
-	write_storage "$entries"
+	local entries="$(read_storage "$password" | grep -E -v "^\[${delete_id}\]")"
+	write_storage "$password" "$entries"
+}
+
+request_password() {
+	local password="$1"
+	if [[ -z $password ]]; then
+		read -p "Password:" -s password
+	fi
+	echo "$password"
 }
 
 write_storage() {
-	data="$1"
-	password="qwe"
+	local password="$1"
+	local data="$2"
 
 	encrypt "$password" "$data" > "$STORAGE"
 }
 
 read_storage() {
-	password="qwe"
+	local password="$1"
+
 	if [[ ! -s $STORAGE ]]; then
 		echo "Storage file does not exist" >&2
 		return 0
@@ -90,15 +101,15 @@ read_storage() {
 }
 
 encrypt() {
-	password="$1"
-	data="$2"
+	local password="$1"
+	local data="$2"
 
 	echo "$data" | openssl enc -e -a -aes-256-cbc -pass "pass:$password"
 }
 
 decrypt() {
-	password="$1"
-	encrypted="$2"
+	local password="$1"
+	local encrypted="$2"
 	if [[ -z $encrypted ]]; then
 		return 0
 	fi

@@ -5,9 +5,9 @@ export PSR_TEST_STORAGE="/tmp/.psr_test_storage"
 test_add_one() {
 	echo "" > "$PSR_TEST_STORAGE"
 
-	./psr.sh a qwe rty
+	./psr.sh a qwe rty <<< passw
 
-	entries="$(./psr.sh p)"
+	entries="$(./psr.sh p <<< passw)"
 	echo "$entries"
 	if [[ $entries != "[0] qwe rty" ]]; then
 		exit 1
@@ -17,10 +17,10 @@ test_add_one() {
 test_add_multiple() {
 	echo "" > "$PSR_TEST_STORAGE"
 
-	./psr.sh a qwe rty
-	./psr.sh a sdasd
+	./psr.sh a qwe rty <<< passw
+	./psr.sh a sdasd <<< passw
 
-	entries="$(./psr.sh p)"
+	entries="$(./psr.sh p <<< passw)"
 	echo "$entries"
 	if [[ $entries != "[0] qwe rty"$'\n'"[1] sdasd" ]]; then
 		exit 1
@@ -30,10 +30,10 @@ test_add_multiple() {
 test_add_with_tab() {
 	echo "" > "$PSR_TEST_STORAGE"
 
-	./psr.sh a qwe		rty
-	./psr.sh a "qwe		rty"
+	./psr.sh a qwe		rty <<< passw
+	./psr.sh a "qwe		rty" <<< passw
 
-	entries="$(./psr.sh p)"
+	entries="$(./psr.sh p <<< passw)"
 	echo "$entries"
 	if [[ $entries != "[0] qwe rty"$'\n'"[1] qwe		rty" ]]; then
 		exit 1
@@ -43,12 +43,12 @@ test_add_with_tab() {
 test_delete_by_id() {
 	echo "" > "$PSR_TEST_STORAGE"
 
-	./psr.sh a zero zero
-	./psr.sh a one
-	./psr.sh a two
-	./psr.sh d 1
+	./psr.sh a zero zero <<< passw
+	./psr.sh a one <<< passw
+	./psr.sh a two <<< passw
+	./psr.sh d 1 <<< passw
 
-	entries=$(./psr.sh p)
+	entries=$(./psr.sh p <<< passw)
 	echo "$entries"
 	if [[ $entries != "[0] zero zero"$'\n'"[2] two" ]]; then
 		exit 1
@@ -58,11 +58,11 @@ test_delete_by_id() {
 test_multiline_entries() {
 	echo "" > "$PSR_TEST_STORAGE"
 
-	./psr.sh a zero zero
-	./psr.sh a one$'\n'one
-	./psr.sh a two
+	./psr.sh a zero zero <<< passw
+	./psr.sh a one$'\n'one <<< passw
+	./psr.sh a two <<< passw
 
-	entries=$(./psr.sh p)
+	entries=$(./psr.sh p <<< passw)
 	echo "$entries"
 	if [[ $entries != "[0] zero zero"$'\n'"[1] one"$'\n'" one"$'\n'"[2] two" ]]; then
 		exit 1
