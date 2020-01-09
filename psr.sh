@@ -56,6 +56,7 @@ add_entry() {
 	password="$(request_password "$password")"
 
 	data="$(echo "$data" | sed -E "s/^/ /")"
+	data="$data"$'\n'-------------------------------------
 
 	local entries="$(read_storage "$password")"
 	if [[ ! -z $entries ]]; then
@@ -88,16 +89,22 @@ delete_entry_by_id() {
 	password="$(request_password "$password")"
 
 	local entries="$(read_storage "$password")"
-	local delete_entry="$(echo "$entries" | grep -E "^\[${delete_id}\]")"
+	local delete_entry="$(
+		echo "$entries" | \
+		sed -En "/^\[${delete_id}\].*/,/^---.*/ p" | \
+		sed "$ d"
+	)"
 	if [[ ! -z $delete_entry ]]; then
-		local entries="$(echo "$entries" | grep -E -v "^\[${delete_id}\]")"
+		local entries="$(
+			echo "$entries" | \
+			sed -E "/^\[${delete_id}\].*/,/^---.*/ d"
+		)"
 		write_storage "$password" "$entries"
 
-		[[ $? == 0 ]] && echo "Deleted entry: \"$delete_entry\""
+		[[ $? == 0 ]] && echo "Deleted entry: \"${delete_entry}\""
 	else
 		echo "Not found"
 	fi
-	# FIX: fix deletion multiline entries
 }
 
 request_password() {
