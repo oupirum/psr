@@ -36,6 +36,7 @@ handle_command() {
 		p|print) print_all ;;
 		a|add) add_entry "${payload[@]}" ;;
 		d|r|delete|remove) delete_entry_by_id "${payload[@]}" ;;
+		s|search) search "${payload[@]}" ;;
 		q|quit|exit) exit 0 ;;
 
 		h|help) print_help ;;
@@ -51,7 +52,8 @@ print_all() {
 add_entry() {
 	local data="$*"
 	if [[ -z $data ]]; then
-		return 0
+		echo "Specify content to add" >&2
+		return 1
 	fi
 	password="$(request_password "$password")"
 
@@ -105,6 +107,27 @@ delete_entry_by_id() {
 	else
 		echo "Not found"
 	fi
+}
+
+search() {
+	query="$1"
+	if [[ -z $query ]]; then
+		echo "Specify search query" >&2
+		return 1
+	fi
+	password="$(request_password "$password")"
+
+	local entries="$(read_storage "$password")"
+	local entry=""
+	while IFS= read -r line; do
+		entry="${entry}${line}"$'\n'
+		if [[ ! -z $(echo "$line" | grep -E "^---") ]]; then
+			if [[ ! -z $(echo "$entry" | grep -E "$query") ]]; then
+				echo -n "$entry"
+			fi
+			entry=""
+		fi
+	done <<< "$entries"
 }
 
 request_password() {

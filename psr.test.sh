@@ -176,13 +176,65 @@ test_delete_multiline() {
 		[0] zero
 		-------------------------------------
 	EOF
-	echo "entries"
+	echo "$entries"
 	echo "$expect"
 	if [[ $entries != "$expect" ]]; then
 		exit 1
 	fi
 }
 
+test_search() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh a zero <<< passw
+	./psr.sh a one$'\n'qwe$'\n'rty <<< passw
+	./psr.sh a two <<< passw
+
+	entries=$(./psr.sh s one <<< passw)
+	read -d '' expect <<-EOF
+		[1] one
+		 qwe
+		 rty
+		-------------------------------------
+	EOF
+	echo "$entries"
+	echo "$expect"
+	if [[ $entries != "$expect" ]]; then
+		exit 1
+	fi
+
+	entries=$(./psr.sh s w <<< passw)
+	read -d '' expect <<-EOF
+		[1] one
+		 qwe
+		 rty
+		-------------------------------------
+		[2] two
+		-------------------------------------
+	EOF
+	echo "$entries"
+	echo "$expect"
+	if [[ $entries != "$expect" ]]; then
+		exit 1
+	fi
+
+	entries=$(./psr.sh s r <<< passw)
+	read -d '' expect <<-EOF
+		[0] zero
+		-------------------------------------
+		[1] one
+		 qwe
+		 rty
+		-------------------------------------
+	EOF
+	echo "$entries"
+	echo "$expect"
+	if [[ $entries != "$expect" ]]; then
+		exit 1
+	fi
+}
+
+# TODO: test with wrong password
 # TODO: test saving same content multiple times
 
 test_add_one && echo "Done" && \
@@ -193,4 +245,5 @@ test_multiline_entries && echo "Done" && \
 test_add_interactive && echo "Done" && \
 test_add_interactive_with_print && echo "Done" && \
 test_delete_multiline && echo "Done" && \
+test_search && echo "Done" && \
 echo "Success"
