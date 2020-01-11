@@ -351,6 +351,69 @@ test_delete_with_wrong_id() {
 	fi
 }
 
+test_search_not_found() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	output="$(
+		./psr.sh <<-EOF
+			a zero
+			passw
+			a one
+			a two
+			s qwe
+			q
+		EOF
+	)"
+
+	read -d '' expect <<-EOF
+		Added entry with id 0
+
+		Added entry with id 1
+
+		Added entry with id 2
+
+
+	EOF
+	echo "output: $output"
+	echo "expect: $expect"
+	if [[ $output != "$expect" ]]; then
+		exit 1
+	fi
+}
+
+test_search_regex() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	output="$(
+		./psr.sh <<-EOF
+			a zero
+			passw
+			a one
+			a two
+			s [a-z]o
+			q
+		EOF
+	)"
+
+	read -d '' expect <<-EOF
+		Added entry with id 0
+
+		Added entry with id 1
+
+		Added entry with id 2
+
+		[0] zero
+		-------------------------------------
+		[2] two
+		-------------------------------------
+	EOF
+	echo "output: $output"
+	echo "expect: $expect"
+	if [[ $output != "$expect" ]]; then
+		exit 1
+	fi
+}
+
 test_add_one && echo "Done" && \
 test_add_multiple && echo "Done" && \
 test_add_with_tab && echo "Done" && \
@@ -365,4 +428,6 @@ test_add_with_wrong_password && echo "Done" && \
 test_delete_with_wrong_password && echo "Done" && \
 test_change_password && echo "Done" && \
 test_delete_with_wrong_id && echo "Done" && \
+test_search_not_found && echo "Done" && \
+test_search_regex && echo "Done" && \
 echo "Success"
