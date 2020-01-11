@@ -37,6 +37,7 @@ handle_command() {
 		a|add) add_entry "${payload[@]}" ;;
 		d|r|delete|remove) delete_entry_by_id "${payload[@]}" ;;
 		s|search) search "${payload[@]}" ;;
+		c|chpass) change_password ;;
 		q|quit|exit) exit 0 ;;
 
 		h|help) print_help ;;
@@ -150,6 +151,20 @@ search() {
 			entry=""
 		fi
 	done <<< "$entries"
+}
+
+change_password() {
+	local old_password="$(request_password "")"
+	local new_password="$(request_password "")"
+
+	local entries
+	entries="$(read_storage "$old_password")"
+	if [[ $? != 0 ]]; then
+		echo "Could not decrypt data" >&2
+		return 1
+	fi
+
+	write_storage "$new_password" "$entries"
 }
 
 request_password() {

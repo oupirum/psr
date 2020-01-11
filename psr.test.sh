@@ -289,6 +289,32 @@ test_delete_with_wrong_password() {
 	fi
 }
 
+test_change_password() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh a zero <<< passw
+	./psr.sh a one <<< passw
+	./psr.sh c <<-EOF
+		passw
+		new-passw
+	EOF
+
+	entries="$(./psr.sh p <<< new-passw)"
+	read -d '' expect <<-EOF
+		[0] zero
+		-------------------------------------
+		[1] one
+		-------------------------------------
+	EOF
+	echo "entries: $entries"
+	echo "expect: $expect"
+	if [[ $entries != "$expect" ]]; then
+		exit 1
+	fi
+}
+
+# TODO: test delte with wrong id
+
 test_add_one && echo "Done" && \
 test_add_multiple && echo "Done" && \
 test_add_with_tab && echo "Done" && \
@@ -301,4 +327,5 @@ test_search && echo "Done" && \
 test_print_with_wrong_password && echo "Done" && \
 test_add_with_wrong_password && echo "Done" && \
 test_delete_with_wrong_password && echo "Done" && \
+test_change_password && echo "Done" && \
 echo "Success"
