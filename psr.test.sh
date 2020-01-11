@@ -313,7 +313,43 @@ test_change_password() {
 	fi
 }
 
-# TODO: test delte with wrong id
+test_delete_with_wrong_id() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	output="$(
+		./psr.sh <<-EOF
+			a zero
+			passw
+			a one
+			a two
+			d 3
+			p
+			q
+		EOF
+	)"
+
+	read -d '' expect <<-EOF
+		Added entry with id 0
+
+		Added entry with id 1
+
+		Added entry with id 2
+
+		Not found
+
+		[0] zero
+		-------------------------------------
+		[1] one
+		-------------------------------------
+		[2] two
+		-------------------------------------
+	EOF
+	echo "$output"
+	echo "$expect"
+	if [[ $output != "$expect" ]]; then
+		exit 1
+	fi
+}
 
 test_add_one && echo "Done" && \
 test_add_multiple && echo "Done" && \
@@ -328,4 +364,5 @@ test_print_with_wrong_password && echo "Done" && \
 test_add_with_wrong_password && echo "Done" && \
 test_delete_with_wrong_password && echo "Done" && \
 test_change_password && echo "Done" && \
+test_delete_with_wrong_id && echo "Done" && \
 echo "Success"
