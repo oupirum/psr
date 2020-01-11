@@ -66,7 +66,7 @@ test_delete_by_id() {
 	./psr.sh a two <<< passw
 	./psr.sh d 1 <<< passw
 
-	entries=$(./psr.sh p <<< passw)
+	entries="$(./psr.sh p <<< passw)"
 	read -d '' expect <<-EOF
 		[0] zero zero
 		-------------------------------------
@@ -87,7 +87,7 @@ test_multiline_entries() {
 	./psr.sh a one$'\n'one <<< passw
 	./psr.sh a two <<< passw
 
-	entries=$(./psr.sh p <<< passw)
+	entries="$(./psr.sh p <<< passw)"
 	read -d '' expect <<-EOF
 		[0] zero zero
 		-------------------------------------
@@ -114,7 +114,7 @@ test_add_interactive() {
 		q
 	EOF
 
-	entries=$(./psr.sh p <<< passw)
+	entries="$(./psr.sh p <<< passw)"
 	read -d '' expect <<-EOF
 		[0] zero
 		-------------------------------------
@@ -171,7 +171,7 @@ test_delete_multiline() {
 	./psr.sh a one$'\n'qwe$'\n'rty <<< passw
 	./psr.sh d 1 <<< passw
 
-	entries=$(./psr.sh p <<< passw)
+	entries="$(./psr.sh p <<< passw)"
 	read -d '' expect <<-EOF
 		[0] zero
 		-------------------------------------
@@ -190,7 +190,7 @@ test_search() {
 	./psr.sh a one$'\n'qwe$'\n'rty <<< passw
 	./psr.sh a two <<< passw
 
-	entries=$(./psr.sh s one <<< passw)
+	entries="$(./psr.sh s one <<< passw)"
 	read -d '' expect <<-EOF
 		[1] one
 		 qwe
@@ -203,7 +203,7 @@ test_search() {
 		exit 1
 	fi
 
-	entries=$(./psr.sh s w <<< passw)
+	entries="$(./psr.sh s w <<< passw)"
 	read -d '' expect <<-EOF
 		[1] one
 		 qwe
@@ -218,7 +218,7 @@ test_search() {
 		exit 1
 	fi
 
-	entries=$(./psr.sh s r <<< passw)
+	entries="$(./psr.sh s r <<< passw)"
 	read -d '' expect <<-EOF
 		[0] zero
 		-------------------------------------
@@ -234,8 +234,60 @@ test_search() {
 	fi
 }
 
-# TODO: test with wrong password
-# TODO: test saving same content multiple times
+test_print_with_wrong_password() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh a zero <<< passw
+	./psr.sh a one <<< passw
+
+	entries="$(./psr.sh p <<< passw-wrong)"
+	read -d '' expect <<-EOF
+	EOF
+	echo "entries: $entries"
+	echo "expect: $expect"
+	if [[ $entries != "$expect" ]]; then
+		exit 1
+	fi
+}
+
+test_add_with_wrong_password() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh a zero <<< passw
+	./psr.sh a one <<< passw-wrong
+
+	entries="$(./psr.sh p <<< passw)"
+	read -d '' expect <<-EOF
+		[0] zero
+		-------------------------------------
+	EOF
+	echo "entries: $entries"
+	echo "expect: $expect"
+	if [[ $entries != "$expect" ]]; then
+		exit 1
+	fi
+}
+
+test_delete_with_wrong_password() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh a zero <<< passw
+	./psr.sh a one <<< passw
+	./psr.sh d one <<< passw-wrong
+
+	entries="$(./psr.sh p <<< passw)"
+	read -d '' expect <<-EOF
+		[0] zero
+		-------------------------------------
+		[1] one
+		-------------------------------------
+	EOF
+	echo "entries: $entries"
+	echo "expect: $expect"
+	if [[ $entries != "$expect" ]]; then
+		exit 1
+	fi
+}
 
 test_add_one && echo "Done" && \
 test_add_multiple && echo "Done" && \
@@ -246,4 +298,7 @@ test_add_interactive && echo "Done" && \
 test_add_interactive_with_print && echo "Done" && \
 test_delete_multiline && echo "Done" && \
 test_search && echo "Done" && \
+test_print_with_wrong_password && echo "Done" && \
+test_add_with_wrong_password && echo "Done" && \
+test_delete_with_wrong_password && echo "Done" && \
 echo "Success"

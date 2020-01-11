@@ -47,6 +47,10 @@ handle_command() {
 print_all() {
 	password="$(request_password "$password")"
 	read_storage "$password"
+	if [[ $? != 0 ]]; then
+		echo "Could not decrypt data" >&2
+		return 1
+	fi
 }
 
 add_entry() {
@@ -60,7 +64,13 @@ add_entry() {
 	data="$(echo "$data" | sed -E "s/^/ /")"
 	data="$data"$'\n'-------------------------------------
 
-	local entries="$(read_storage "$password")"
+	local entries
+	entries="$(read_storage "$password")"
+	if [[ $? != 0 ]]; then
+		echo "Could not decrypt data" >&2
+		return 1
+	fi
+
 	if [[ ! -z $entries ]]; then
 		local last_number=$(
 			echo "$entries" | \
@@ -90,7 +100,13 @@ delete_entry_by_id() {
 	fi
 	password="$(request_password "$password")"
 
-	local entries="$(read_storage "$password")"
+	local entries
+	entries="$(read_storage "$password")"
+	if [[ $? != 0 ]]; then
+		echo "Could not decrypt data" >&2
+		return 1
+	fi
+
 	local delete_entry="$(
 		echo "$entries" | \
 		sed -En "/^\[${delete_id}\].*/,/^---.*/ p" | \
@@ -117,7 +133,13 @@ search() {
 	fi
 	password="$(request_password "$password")"
 
-	local entries="$(read_storage "$password")"
+	local entries
+	entries="$(read_storage "$password")"
+	if [[ $? != 0 ]]; then
+		echo "Could not decrypt data" >&2
+		return 1
+	fi
+
 	local entry=""
 	while IFS= read -r line; do
 		entry="${entry}${line}"$'\n'
@@ -153,7 +175,8 @@ read_storage() {
 		return 0
 	fi
 
-	decrypt "$password" "$(cat "$STORAGE")"
+	encrypted="$(cat "$STORAGE")"
+	decrypt "$password" "$encrypted"
 }
 
 encrypt() {
@@ -170,7 +193,10 @@ decrypt() {
 		return 0
 	fi
 
-	echo "$encrypted" | openssl enc -d -a -aes-256-cbc -pass "pass:$password"
+	local data
+	data="$(echo "$encrypted" | openssl enc -d -a -aes-256-cbc -pass "pass:$password")"
+
+	[[ $? == 0 ]] && echo "$data"
 }
 
 
