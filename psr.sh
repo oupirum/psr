@@ -23,7 +23,7 @@ print_help() {
 
 prompt_command() {
 	local command
-	read -p "Type command: " command
+	read -e -p "Command: > " command
 	handle_command $command
 }
 
@@ -35,9 +35,9 @@ handle_command() {
 	case $cmd in
 		p|print) print_all ;;
 		a|add) add_entry "${payload[@]}" ;;
-		d|r|delete|remove) delete_entry_by_id "${payload[@]}" ;;
+		d|rm|delete|remove) delete_entry_by_id "${payload[@]}" ;;
 		s|search) search "${payload[@]}" ;;
-		c|chpass) change_password ;;
+		chpass) change_password ;;
 		q|quit|exit) exit 0 ;;
 
 		h|help) print_help ;;
@@ -170,7 +170,8 @@ change_password() {
 request_password() {
 	local password="$1"
 	if [[ -z $password ]]; then
-		read -p "Password:" -s password
+		read -p "Password: > " -s password
+		echo "" >&2
 	fi
 	echo "$password"
 }

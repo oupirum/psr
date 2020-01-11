@@ -294,7 +294,7 @@ test_change_password() {
 
 	./psr.sh a zero <<< passw
 	./psr.sh a one <<< passw
-	./psr.sh c <<-EOF
+	./psr.sh chpass <<-EOF
 		passw
 		new-passw
 	EOF
