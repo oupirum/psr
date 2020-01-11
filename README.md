@@ -30,7 +30,7 @@ On first command in session it will require password.
 This password will be remembered for current session.
 
 
-Commands can be used in non-interactive mod too:
+Commands can be used in non-interactive mode too:
 <pre>
 ~$ ./psr.sh add my secret value
 </pre>
