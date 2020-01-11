@@ -289,6 +289,39 @@ test_delete_with_wrong_password() {
 	fi
 }
 
+test_session_wrong_password() {
+	echo "" > "$PSR_TEST_STORAGE"
+
+	./psr.sh <<-EOF
+		a zero
+		passw
+		a one
+		q
+	EOF
+	output="$(
+		./psr.sh <<-EOF
+			p
+			passw-wrong
+			p
+			passw
+			q
+		EOF
+	)"
+
+	read -d '' expect <<-EOF
+		[0] zero
+		-------------------------------------
+		[1] one
+		-------------------------------------
+	EOF
+	expect=$'\n'"$expect"
+	echo "output: $output"
+	echo "expect: $expect"
+	if [[ $output != "$expect" ]]; then
+		exit 1
+	fi
+}
+
 test_change_password() {
 	echo "" > "$PSR_TEST_STORAGE"
 
@@ -426,6 +459,7 @@ test_search && echo "Done" && \
 test_print_with_wrong_password && echo "Done" && \
 test_add_with_wrong_password && echo "Done" && \
 test_delete_with_wrong_password && echo "Done" && \
+test_session_wrong_password && echo "Done" && \
 test_change_password && echo "Done" && \
 test_delete_with_wrong_id && echo "Done" && \
 test_search_not_found && echo "Done" && \

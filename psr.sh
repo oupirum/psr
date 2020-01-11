@@ -70,6 +70,7 @@ print_all() {
 	password="$(request_password "$password")"
 	read_storage "$password"
 	if [[ $? != 0 ]]; then
+		password=""
 		echo "Could not decrypt data" >&2
 		return 1
 	fi
@@ -89,6 +90,7 @@ add_entry() {
 	local entries
 	entries="$(read_storage "$password")"
 	if [[ $? != 0 ]]; then
+		password=""
 		echo "Could not decrypt data" >&2
 		return 1
 	fi
@@ -125,6 +127,7 @@ delete_entry_by_id() {
 	local entries
 	entries="$(read_storage "$password")"
 	if [[ $? != 0 ]]; then
+		password=""
 		echo "Could not decrypt data" >&2
 		return 1
 	fi
@@ -158,6 +161,7 @@ search() {
 	local entries
 	entries="$(read_storage "$password")"
 	if [[ $? != 0 ]]; then
+		password=""
 		echo "Could not decrypt data" >&2
 		return 1
 	fi
@@ -181,6 +185,7 @@ change_password() {
 	local entries
 	entries="$(read_storage "$old_password")"
 	if [[ $? != 0 ]]; then
+		password=""
 		echo "Could not decrypt data" >&2
 		return 1
 	fi
