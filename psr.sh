@@ -18,7 +18,28 @@ main() {
 }
 
 print_help() {
-	echo "Help:"
+	cat <<-EOF
+		Available commands:
+		  a <value>       - add new entry
+		  add <value>       - long form
+
+		  d <N>           - delete entry with id N
+		  rm <N>
+		  delete <N>
+		  remove <N>
+
+		  p               - print all entries
+		  print
+
+		  s <somestr>     - search entries by given substring (or extended regex pattern)
+		  search <somestr>
+
+		  chpass          - change encryption key
+
+		  q               - quit
+		  quit
+		  exit
+	EOF
 }
 
 prompt_command() {
