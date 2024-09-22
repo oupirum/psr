@@ -56,4 +56,4 @@ This will execute the `add` command and store the entry without starting an inte
 
 
 ### Data Storage
-All encrypted data is stored in the `~/.psr_storage` file. This file is automatically created if it doesn't exist. Ensure that you safeguard this file as losing it will result in the permanent loss of all stored entries.
+All encrypted data is stored in the `~/.psr_storage` file. This file is automatically created if it doesn't exist. Ensure that you safeguard or backup this file as losing it will result in the permanent loss of all stored entries.
