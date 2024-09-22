@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [[ ! -z $PSR_TEST_STORAGE ]]; then
-	STORAGE="$PSR_TEST_STORAGE"
+if [[ ! -z $PSR_STORAGE ]]; then
+	STORAGE="$PSR_STORAGE"
 else
-	STORAGE="$HOME/.psr_storage_1"
+	STORAGE="$HOME/.psr_storage"
 fi
 
 main() {
@@ -20,24 +20,22 @@ main() {
 print_help() {
 	cat <<-EOF
 		Available commands:
-		  a <value>       - add new entry
-		  add <value>       - long form
+		  add <value>     - add new entry
+		  a <value>         - alias for command above
 
-		  d <N>           - delete entry with id N
-		  rm <N>
-		  delete <N>
-		  remove <N>
+		  delete <N>      - delete entry with id N
+		  d <N>
 
-		  p               - print all entries
-		  print
+		  print           - print all entries
+		  p
 
-		  s <somestr>     - search entries by given substring (or extended regex pattern)
-		  search <somestr>
+		  search <somestr>  - search entries by given substring (or extended regex pattern)
+		  s <somestr>
 
 		  chpass          - change encryption key
 
-		  q               - quit
-		  quit
+		  quit            - quit
+		  q
 		  exit
 	EOF
 }
@@ -56,10 +54,10 @@ handle_command() {
 	case $cmd in
 		p|print) print_all ;;
 		a|add) add_entry "${payload[@]}" ;;
-		d|rm|delete|remove) delete_entry_by_id "${payload[@]}" ;;
+		d|delete) delete_entry_by_id "${payload[@]}" ;;
 		s|search) search "${payload[@]}" ;;
 		chpass) change_password ;;
-		q|quit|exit) exit 0 ;;
+		q|quit|exit) quit ;;
 
 		h|help) print_help ;;
 		*) print_help ;;
@@ -225,7 +223,7 @@ encrypt() {
 	local password="$1"
 	local data="$2"
 
-	echo "$data" | openssl enc -e -a -aes-256-cbc -pass "pass:$password"
+	echo "$data" | openssl enc -e -a -aes-256-cbc -md sha256 -pbkdf2 -pass "pass:$password"
 }
 
 decrypt() {
@@ -236,11 +234,15 @@ decrypt() {
 	fi
 
 	local data
-	data="$(echo "$encrypted" | openssl enc -d -a -aes-256-cbc -pass "pass:$password")"
+	data="$(echo "$encrypted" | openssl enc -d -a -aes-256-cbc -md sha256 -pbkdf2 -pass "pass:$password")"
 
 	[[ $? == 0 ]] && echo "$data"
 }
 
+quit() {
+	clear
+	exit 0
+}
 
 
 main "$@"
