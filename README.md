@@ -2,7 +2,8 @@
 **A Simple AES-Encrypted Storage (Password Manager)**
 
 
-`psr` is a simple AES256-encrypted storage utility for managing sensitive data such as passwords. You can securely store, search, add, and delete entries via a command-line interface.
+`psr` is a simple AES256-encrypted storage utility for managing sensitive data such as passwords. You can securely store, search, add, and delete entries via a command-line interface.<br/>
+All encrypted data is stored in the single `~/.psr_storage` file in your home directory.
 
 ### Usage
 To start the tool, run the following command:
